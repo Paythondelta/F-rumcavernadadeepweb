@@ -1,0 +1,479 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fórum</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #1a1a1a;
+            color: #ccc;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            width: 90%;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #333;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            border-radius: 10px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .category {
+            margin-bottom: 20px;
+        }
+        .category h2 {
+            background-color: #444;
+            color: #fff;
+            padding: 10px;
+            margin: 0;
+            border-radius: 5px 5px 0 0;
+        }
+        .topic {
+            border-bottom: 1px solid #555;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+        }
+        .topic:hover {
+            background-color: #555;
+        }
+        .add-topic, .add-reply {
+            margin: 20px 0;
+        }
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #555;
+            border-radius: 5px;
+            box-sizing: border-box;
+            background-color: #444;
+            color: #ccc;
+        }
+        input[type="text"]:nth-child(1) {
+            max-length: 10;
+        }
+        textarea {
+            max-length: 520;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #555;
+            color: #ccc;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #777;
+        }
+        .reply {
+            margin-left: 20px;
+            border-left: 2px solid #555;
+            padding-left: 10px;
+            position: relative;
+        }
+        .reply h4 {
+            margin: 0;
+        }
+        .view-counter {
+            text-align: center;
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #444;
+            border: 1px solid #555;
+            border-radius: 5px;
+        }
+        @media (max-width: 600px) {
+            .container {
+                width: 100%;
+                padding: 10px;
+            }
+            .category h2 {
+                font-size: 1.2em;
+            }
+            .topic h3 {
+                font-size: 1em;
+            }
+            input[type="text"], textarea {
+                padding: 5px;
+            }
+            button {
+                padding: 5px 10px;
+            }
+        }
+        #loginForm {
+            display: none;
+        }
+        #forumContainer {
+            display: none;
+        }
+        .like-button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.5em;
+            color: #777;
+            transition: color 0.3s ease;
+            padding: 0;
+            margin: 0 5px;
+        }
+        .like-button.liked {
+            color: #e74c3c;
+        }
+        .like-count {
+            font-size: 1em;
+            color: #ccc;
+        }
+        .media {
+            margin-top: 10px;
+            max-width: 100%;
+        }
+        .delete-button {
+            display: none;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1em;
+            color: #e74c3c;
+            margin-left: 10px;
+        }
+        .float-button {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #444;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            font-size: 24px;
+            cursor: pointer;
+            text-align: center;
+            line-height: 50px;
+        }
+        .float-button i {
+            font-size: 24px;
+        }
+        #adminLogin {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+        }
+        #adminLoginForm {
+            background-color: #333;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <div id="adminLogin">
+        <div id="adminLoginForm" class="container">
+            <h2>Login de Admin</h2>
+            <input type="text" id="adminUsername" placeholder="Nome de usuário">
+            <input type="password" id="adminPassword" placeholder="Senha">
+            <button onclick="adminLogin()">Login</button>
+        </div>
+    </div>
+
+    <div id="loginForm" class="container">
+        <h2>Login</h2>
+        <input type="text" id="username" placeholder="Nome de usuário">
+        <input type="password" id="password" placeholder="Senha">
+        <button onclick="login()">Login</button>
+    </div>
+
+    <div id="forumContainer" class="container">
+        <div class="header">
+            <h1>Fórum</h1>
+        </div>
+
+        <div class="view-counter">
+            <p id="viewCount">Este site foi visitado <span id="viewCountNumber">0</span> vezes.</p>
+        </div>
+
+        <div class="category" id="category1">
+            <h2>Categoria 1</h2>
+            <div class="topics" id="topics1">
+                <!-- Tópicos serão adicionados aqui -->
+            </div>
+            <div class="add-topic">
+                <input type="text" id="newTopic1" placeholder="Novo tópico...">
+                <button onclick="addTopic('topics1', 'newTopic1')">Adicionar Tópico</button>
+            </div>
+        </div>
+
+        <div class="category" id="category2">
+            <h2>Categoria 2</h2>
+            <div class="topics" id="topics2">
+                <!-- Tópicos serão adicionados aqui -->
+            </div>
+            <div class="add-topic">
+                <input type="text" id="newTopic2" placeholder="Novo tópico...">
+                <button onclick="addTopic('topics2', 'newTopic2')">Adicionar Tópico</button>
+            </div>
+        </div>
+    </div>
+
+    <button class="float-button" onclick="showAdminLogin()"><i class="fas fa-cog"></i></button>
+
+    <script src="https://kit.fontawesome.com/a076d05399.js"></script>
+    <script>
+        function isValidInput(input) {
+            return input && input.trim().length > 0;
+        }
+
+        function loadData() {
+            const data = JSON.parse(localStorage.getItem('forumData')) || {};
+            for (const categoryId in data) {
+                const topics = data[categoryId];
+                topics.forEach(topic => {
+                    const topicsDiv = document.getElementById(categoryId);
+                    const topicDiv = document.createElement('div');
+                    topicDiv.className = 'topic';
+                    topicDiv.innerHTML = `
+                        <h3>${topic.title}</h3>
+                        <div class="replies">
+                            ${topic.replies.map(reply => `
+                                <div class="reply">
+                                    <h4>${reply.user}:</h4>
+                                    <p>${linkify(reply.message)}</p>
+                                    ${reply.media ? `<div class="media">${reply.media}</div>` : ''}
+                                    <button class="like-button" onclick="toggleLike(this)">&#x2764;</button>
+                                    <span class="like-count">${reply.likes || 0}</span>
+                                    <button class="delete-button" onclick="deleteReply(this)">Excluir</button>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <div class="add-reply">
+                            <input type="text" placeholder="Seu nome...">
+                            <textarea placeholder="Sua resposta..."></textarea>
+                            <input type="file" accept="image/*,video/*">
+                            <button onclick="addReply(this)">Responder</button>
+                        </div>
+                    `;
+                    topicsDiv.appendChild(topicDiv);
+                });
+            }
+            updateDeleteButtonsVisibility();
+        }
+
+        function saveData() {
+            const data = {};
+            document.querySelectorAll('.category').forEach(category => {
+                const categoryId = category.id;
+                const topics = [];
+                category.querySelectorAll('.topic').forEach(topic => {
+                    const title = topic.querySelector('h3').textContent;
+                    const replies = Array.from(topic.querySelectorAll('.reply')).map(reply => ({
+                        user: reply.querySelector('h4').textContent.replace(':', ''),
+                        message: reply.querySelector('p').textContent,
+                        likes: parseInt(reply.querySelector('.like-count').textContent),
+                        media: reply.querySelector('.media') ? reply.querySelector('.media').innerHTML : null
+                    }));
+                    topics.push({ title, replies });
+                });
+                data[categoryId] = topics;
+            });
+            localStorage.setItem('forumData', JSON.stringify(data));
+        }
+
+        function addTopic(categoryId, inputId) {
+            const input = document.getElementById(inputId);
+            const topicTitle = input.value.trim();
+            if (!isValidInput(topicTitle)) {
+                alert("Por favor, insira um título válido para o tópico.");
+                return;
+            }
+
+            const topicsDiv = document.getElementById(categoryId);
+            const topicDiv = document.createElement('div');
+            topicDiv.className = 'topic';
+            topicDiv.innerHTML = `
+                <h3>${topicTitle}</h3>
+                <div class="replies">
+                    <!-- Respostas serão adicionadas aqui -->
+                </div>
+                <div class="add-reply">
+                    <input type="text" placeholder="Seu nome...">
+                    <textarea placeholder="Sua resposta..."></textarea>
+                    <input type="file" accept="image/*,video/*">
+                    <button onclick="addReply(this)">Responder</button>
+                </div>
+            `;
+            topicsDiv.appendChild(topicDiv);
+            input.value = '';
+
+            saveData();
+        }
+
+        function addReply(button) {
+            const replyInputs = button.parentElement.querySelectorAll('input[type="text"], textarea');
+            const fileInput = button.parentElement.querySelector('input[type="file"]');
+            const userName = replyInputs[0].value.trim() || "Anônimo";
+            const replyText = replyInputs[1].value.trim();
+            if (!isValidInput(replyText)) {
+                alert("Por favor, insira uma resposta válida.");
+                return;
+            }
+
+            const repliesDiv = button.parentElement.previousElementSibling;
+            const replyDiv = document.createElement('div');
+            replyDiv.className = 'reply';
+            replyDiv.innerHTML = `
+                <h4>${userName}:</h4>
+                <p>${linkify(replyText)}</p>
+                ${fileInput.files.length > 0 ? `<div class="media">${renderMedia(fileInput.files[0])}</div>` : ''}
+                <button class="like-button" onclick="toggleLike(this)">&#x2764;</button>
+                <span class="like-count">0</span>
+                <button class="delete-button" onclick="deleteReply(this)">Excluir</button>
+            `;
+            repliesDiv.appendChild(replyDiv);
+            replyInputs[0].value = '';
+            replyInputs[1].value = '';
+            fileInput.value = '';
+
+            saveData();
+            updateDeleteButtonsVisibility();
+        }
+
+        function renderMedia(file) {
+            const url = URL.createObjectURL(file);
+            if (file.type.startsWith('image/')) {
+                return `<img src="${url}" alt="Imagem enviada" class="media">`;
+            } else if (file.type.startsWith('video/')) {
+                return `<video src="${url}" controls class="media"></video>`;
+            }
+        }
+
+        function linkify(text) {
+            const urlPattern = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
+            return text.replace(urlPattern, '<a href="$1" target="_blank">$1</a>');
+        }
+
+        function updateViewCount() {
+            let viewCount = localStorage.getItem('viewCount');
+            if (!viewCount) {
+                viewCount = 0;
+            }
+            viewCount++;
+            localStorage.setItem('viewCount', viewCount);
+            document.getElementById('viewCountNumber').textContent = viewCount;
+        }
+
+        function login() {
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value.trim();
+            if (!isValidInput(username) || !isValidInput(password)) {
+                alert("Por favor, insira um nome de usuário e senha válidos.");
+                return;
+            }
+
+            // Simular um login bem-sucedido
+            localStorage.setItem('loggedInUser', username);
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('forumContainer').style.display = 'block';
+        }
+
+        function adminLogin() {
+            const username = document.getElementById('adminUsername').value.trim();
+            const password = document.getElementById('adminPassword').value.trim();
+            if (username === 'deepweb@55' && password === 'darkweb@55') {
+                localStorage.setItem('loggedInAdmin', username);
+                document.getElementById('adminLogin').style.display = 'none';
+                document.getElementById('loginForm').style.display = 'none';
+                document.getElementById('forumContainer').style.display = 'block';
+                loadData();
+            } else {
+                alert("Usuário ou senha incorretos.");
+            }
+        }
+
+        function isAdmin() {
+            const loggedInAdmin = localStorage.getItem('loggedInAdmin');
+            return loggedInAdmin === 'deepweb@55';
+        }
+
+        function toggleLike(button) {
+            const likeCountSpan = button.nextElementSibling;
+            let likes = parseInt(likeCountSpan.textContent);
+            if (button.classList.contains('liked')) {
+                likes--;
+                button.classList.remove('liked');
+            } else {
+                likes++;
+                button.classList.add('liked');
+            }
+            likeCountSpan.textContent = likes;
+            saveData();
+        }
+
+        function deleteReply(button) {
+            const replyDiv = button.parentElement;
+            replyDiv.parentElement.removeChild(replyDiv);
+            saveData();
+        }
+
+        function deleteMedia(button) {
+            const mediaDiv = button.parentElement;
+            mediaDiv.parentElement.removeChild(mediaDiv);
+            saveData();
+        }
+
+        function showAdminLogin() {
+            document.getElementById('adminLogin').style.display = 'flex';
+        }
+
+        function updateDeleteButtonsVisibility() {
+            const deleteButtons = document.querySelectorAll('.delete-button');
+            deleteButtons.forEach(button => {
+                button.style.display = isAdmin() ? 'inline-block' : 'none';
+            });
+        }
+
+        window.onclick = function(event) {
+            if (event.target === document.getElementById('adminLogin')) {
+                document.getElementById('adminLogin').style.display = 'none';
+            }
+        }
+
+        window.onload = function() {
+            const loggedInUser = localStorage.getItem('loggedInUser');
+            const loggedInAdmin = localStorage.getItem('loggedInAdmin');
+
+            if (loggedInUser || loggedInAdmin) {
+                document.getElementById('loginForm').style.display = 'none';
+                document.getElementById('forumContainer').style.display = 'block';
+            } else {
+                document.getElementById('loginForm').style.display = 'block';
+                document.getElementById('forumContainer').style.display = 'none';
+            }
+
+            loadData();
+            updateViewCount();
+        };
+
+        window.onbeforeunload = function() {
+            localStorage.removeItem('loggedInAdmin');
+        };
+    </script>
+</body>
+</html>
